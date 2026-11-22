@@ -53,7 +53,7 @@ st.markdown(f"""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
 html, body, [class*="css"], .stMarkdown, .stMetric {{ font-family: 'Roboto', sans-serif; }}
-.block-container {{ padding-top: 1.2rem; }}
+.block-container {{ padding-top: 3.8rem; }}  /* deja espacio bajo la barra superior de Streamlit */
 .yt-header {{ display:flex; align-items:center; gap:14px; margin-bottom:4px; }}
 .yt-logo {{ background:{ROJO}; width:54px; height:38px; border-radius:10px;
             display:flex; align-items:center; justify-content:center; }}
@@ -168,6 +168,8 @@ with tab1:
                        labels=ETIQUETAS, title=f"Distribucion de {ETIQUETAS[variable].lower()}")
     fig.update_yaxes(title="Frecuencia (n° de registros)")
     fig.update_traces(hovertemplate="Rango: %{x}<br>Registros: %{y:,}<extra></extra>")
+    # Linea del color del fondo entre barras para separarlas
+    fig.update_traces(marker_line_width=1, marker_line_color=FONDO)
     c2.plotly_chart(estilo(fig), width="stretch")
 
     conteo_cat = dff["categoria"].value_counts().reset_index()
