@@ -205,7 +205,8 @@ with tab3:
                      title="Vistas vs % de likes: mas vistas no significa mas interaccion")
     c2.plotly_chart(estilo(fig), width="stretch")
     c2.caption(f"Correlacion de Spearman vistas – % likes en la seleccion: "
-               f"{dff['view_count'].corr(dff['likes_pct'], method='spearman'):.2f}")
+               f"{dff['view_count'].rank().corr(dff['likes_pct'].rank()):.2f}")
+    # Spearman = Pearson sobre los rankings (.rank()); asi no se necesita scipy
 
 # ---------- 6.4 Segmentacion ----------
 with tab4:
