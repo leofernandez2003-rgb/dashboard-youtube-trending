@@ -2,7 +2,7 @@
 
 Dashboard interactivo del examen final de **Visualización de la Información (UDD, 2026)**. Transforma el análisis exploratorio del Certamen 2 en una app web hecha con **Streamlit + Plotly Express**.
 
-**App publicada:** _(enlace .streamlit.app — se completa al desplegar)_
+**App publicada:** https://dashboard-trending-mx-us.streamlit.app
 
 **Versión:** v2.1.0-beta (Hito 1)
 
