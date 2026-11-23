@@ -294,19 +294,19 @@ with tab5:
     jerarquia = dff.groupby(["country", "categoria", "segmento"]).agg(
         registros=("video_id", "count"), likes_pct=("likes_pct", "median")).reset_index()
     fig = px.sunburst(jerarquia, path=["country", "categoria", "segmento"], values="registros",
-                      # Escala blanco -> rojo YouTube: blanco = poca interaccion, rojo = mucha
-                      color="likes_pct", color_continuous_scale=["#FFFFFF", ROJO],
+                      # Misma escala que las coordenadas paralelas: azul = poca interaccion, rojo = mucha
+                      color="likes_pct", color_continuous_scale=["#3EA6FF", "#FFFFFF", ROJO],
                       range_color=[jerarquia["likes_pct"].quantile(0.10), jerarquia["likes_pct"].quantile(0.90)],
                       maxdepth=2,
                       hover_data={"likes_pct": ":.2f"}, labels={"likes_pct": "Mediana % likes"},
                       title="Pais → categoria → segmento (tamaño = registros, color = mediana % likes)")
     fig.update_traces(marker_line_color=FONDO, marker_line_width=1.5, insidetextorientation="radial",
-                      insidetextfont=dict(color="#000000"),  # texto negro sobre blanco y rojo
+                      insidetextfont=dict(color="#000000"),  # texto negro sobre azul, blanco y rojo
                       hovertemplate="<b>%{label}</b><br>Ruta: %{id}<br>Registros: %{value:,}"
                                     "<br>Mediana % likes: %{color:.2f}<extra></extra>")
     fig.update_layout(height=620)
     st.plotly_chart(estilo(fig), width="stretch")
-    st.caption("Rojo = mayor % de likes, blanco = menor. Haz clic en una categoria para ver sus segmentos; "
+    st.caption("Rojo = mayor % de likes, azul = menor (misma escala que las coordenadas paralelas). Haz clic en una categoria para ver sus segmentos; "
                "clic en el centro para volver.")
 
     muestra_par = dff.sample(min(3000, len(dff)), random_state=42)

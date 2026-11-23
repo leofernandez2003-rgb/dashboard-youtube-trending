@@ -53,7 +53,7 @@ El dataset no tiene latitud ni longitud, por lo que el componente avanzado es la
 
 - **Pestañas sin emojis:** nombres limpios (Distribución, Tiempo, Relaciones, Segmentos, Jerarquía y perfiles, Mapa), como pidió el profesor.
 - **Histogramas más claros:** las barras de México (rojo) y Estados Unidos (azul) ahora van lado a lado (`barmode="group"`). Antes se superponían con transparencia y la mezcla se veía como un segundo tono de rojo.
-- **Sunburst con nueva escala de color:** blanco → rojo según la mediana de % likes, con texto negro (antes gris → rojo, poco legible). Se abre en dos niveles (país → categoría) y con un clic se ven los segmentos.
+- **Sunburst con nueva escala de color:** azul → blanco → rojo según la mediana de % likes (igual que las coordenadas paralelas), con texto negro (antes gris → rojo, poco legible). Se abre en dos niveles (país → categoría) y con un clic se ven los segmentos.
 - **Tooltips personalizados** también en el método del codo y en el sunburst.
 - **Tabla de perfiles** con nombres de columna legibles, % del total y una descripción de cada segmento, más un texto de interpretación.
 - **Coordenadas paralelas:** el título ya no tapa los nombres de los ejes.
