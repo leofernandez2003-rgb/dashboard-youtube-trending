@@ -110,7 +110,7 @@ interaccion (likes y comentarios por vista) y como cambia eso segun el pais, la 
 <small>Dirigido a creadores de contenido y equipos de marketing digital.</small></div>""", unsafe_allow_html=True)
 
 # ── 4. Filtros globales (panel lateral) ──────────────────────
-st.sidebar.markdown(f"<h2 style='color:{ROJO}'>▶ Filtros</h2>", unsafe_allow_html=True)
+st.sidebar.markdown(f"<h2 style='color:{ROJO}'>Filtros</h2>", unsafe_allow_html=True)
 
 paises = st.sidebar.multiselect("Pais", ["MX", "US"], default=["MX", "US"])
 
@@ -153,7 +153,7 @@ k5.metric("Canales", f"{dff['channelTitle'].nunique():,}".replace(",", "."))
 
 # ── 6. Pestañas ──────────────────────────────────────────────
 tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(
-    ["📊 Distribucion", "📈 Tiempo", "🔗 Relaciones", "🎯 Segmentos", "🌐 Jerarquia y perfiles", "🗺️ Mapa"])
+    ["Distribucion", "Tiempo", "Relaciones", "Segmentos", "Jerarquia y perfiles", "Mapa"])
 
 # ---------- 6.1 Univariado ----------
 with tab1:
@@ -163,13 +163,17 @@ with tab1:
                             format_func=lambda x: ETIQUETAS[x])
     c1.caption("Se grafica hasta el percentil 99 para ver la forma de la distribucion.")
     p99 = dff[variable].quantile(0.99)
-    fig = px.histogram(dff[dff[variable] <= p99], x=variable, color="country", nbins=60,
-                       barmode="overlay", opacity=0.75, color_discrete_map=COLOR_PAIS,
-                       labels=ETIQUETAS, title=f"Distribucion de {ETIQUETAS[variable].lower()}")
+    # barmode="group": una barra por pais lado a lado. Con "overlay" el rojo y el azul se
+    # superponian y la mezcla se veia como un segundo tono de rojo.
+    fig = px.histogram(dff[dff[variable] <= p99], x=variable, color="country", nbins=40,
+                       barmode="group", color_discrete_map=COLOR_PAIS,
+                       category_orders={"country": ["MX", "US"]},
+                       labels=ETIQUETAS, title=f"Distribucion de {ETIQUETAS[variable].lower()} por pais")
     fig.update_yaxes(title="Frecuencia (n° de registros)")
-    fig.update_traces(hovertemplate="Rango: %{x}<br>Registros: %{y:,}<extra></extra>")
+    fig.update_traces(hovertemplate="<b>%{fullData.name}</b><br>Rango: %{x}<br>Registros: %{y:,}<extra></extra>")
     # Linea del color del fondo entre barras para separarlas
     fig.update_traces(marker_line_width=1, marker_line_color=FONDO)
+    fig.update_layout(bargap=0.08)
     c2.plotly_chart(estilo(fig), width="stretch")
 
     conteo_cat = dff["categoria"].value_counts().reset_index()
@@ -219,7 +223,7 @@ with tab4:
         c1, c2 = st.columns(2)
         fig = px.line(codo, x="k", y="inercia", markers=True, color_discrete_sequence=[ROJO],
                       labels={"k": "Numero de segmentos (k)", "inercia": "Inercia (suma de distancias²)"},
-                      title="Metodo del codo: se elige k = 4")
+                      hover_data={"inercia": ":,.0f"}, title="Metodo del codo: se elige k = 4")
         c1.plotly_chart(estilo(fig), width="stretch")
 
         # Radar: promedios por segmento escalados de 0 a 1
@@ -250,8 +254,26 @@ with tab4:
                                             comentarios_pct_promedio=("comentarios_pct", "mean"))
         tabla["porcentaje"] = tabla["n"] / tabla["n"].sum() * 100
         tabla["categoria_dominante"] = seg.groupby("segmento")["categoria"].agg(lambda x: x.value_counts().index[0])
+        tabla["descripcion"] = tabla.index.map({
+            "Interaccion baja": "Vistas normales, pocos likes y comentarios por vista",
+            "Interaccion media": "Vistas normales, buen % de likes",
+            "Interaccion muy alta": "Vistas normales, el publico da like y comenta mucho",
+            "Alcance masivo": "Muchisimas vistas, interaccion moderada"})
         st.subheader("Tabla de perfiles")
-        st.dataframe(tabla.sort_values("n", ascending=False).round(2), width="stretch")
+        st.dataframe(tabla.sort_values("n", ascending=False).round(2), width="stretch",
+                     column_config={"n": st.column_config.NumberColumn("Videos (n)", format="%d"),
+                                    "porcentaje": st.column_config.NumberColumn("% del total", format="%.1f %%"),
+                                    "vistas_promedio": st.column_config.NumberColumn("Vistas promedio", format="%.0f"),
+                                    "likes_pct_promedio": st.column_config.NumberColumn("% likes promedio", format="%.2f"),
+                                    "comentarios_pct_promedio": st.column_config.NumberColumn("% comentarios promedio", format="%.3f"),
+                                    "categoria_dominante": "Categoria dominante", "descripcion": "Descripcion"})
+        tabla = tabla[["n", "porcentaje", "vistas_promedio", "likes_pct_promedio", "comentarios_pct_promedio",
+                       "categoria_dominante", "descripcion"]]
+        mayor = tabla["n"].idxmax()
+        st.info(f"Interpretacion: el segmento mas grande es «{mayor}» ({tabla.loc[mayor, 'porcentaje']:.0f} % de los "
+                "videos segmentados). Estar en tendencia no garantiza interaccion: la mayoria recibe pocos likes y "
+                "comentarios por vista. «Alcance masivo» suma vistas pero no interaccion, y «Interaccion muy alta» "
+                "es el grupo mas valioso para un creador.")
 
         # Selector para ver el detalle de un segmento
         elegido = st.selectbox("Ver detalle del segmento", tabla.sort_values("n", ascending=False).index)
@@ -272,10 +294,20 @@ with tab5:
     jerarquia = dff.groupby(["country", "categoria", "segmento"]).agg(
         registros=("video_id", "count"), likes_pct=("likes_pct", "median")).reset_index()
     fig = px.sunburst(jerarquia, path=["country", "categoria", "segmento"], values="registros",
-                      color="likes_pct", color_continuous_scale=["#272727", "#FF0000"],
+                      # Escala amarillo -> naranjo -> rojo: amarillo = poca interaccion, rojo = mucha.
+                      # (No se usa azul/rojo para no confundir con los colores de pais)
+                      color="likes_pct", color_continuous_scale=["#FFE8A3", "#FFB000", "#FF5A1F", "#C80000"],
+                      range_color=[jerarquia["likes_pct"].quantile(0.10), jerarquia["likes_pct"].quantile(0.90)],
+                      maxdepth=2,
                       hover_data={"likes_pct": ":.2f"}, labels={"likes_pct": "Mediana % likes"},
                       title="Pais → categoria → segmento (tamaño = registros, color = mediana % likes)")
+    fig.update_traces(marker_line_color=FONDO, marker_line_width=1.5, insidetextorientation="radial",
+                      hovertemplate="<b>%{label}</b><br>Ruta: %{id}<br>Registros: %{value:,}"
+                                    "<br>Mediana % likes: %{color:.2f}<extra></extra>")
+    fig.update_layout(height=620)
     st.plotly_chart(estilo(fig), width="stretch")
+    st.caption("Rojo = mayor % de likes, amarillo = menor. Haz clic en una categoria para ver sus segmentos; "
+               "clic en el centro para volver.")
 
     muestra_par = dff.sample(min(3000, len(dff)), random_state=42)
     muestra_par = muestra_par[muestra_par["view_count"] <= dff["view_count"].quantile(0.99)]
@@ -283,7 +315,9 @@ with tab5:
                                                            "dias_a_tendencia"],
                                   color="likes_pct", color_continuous_scale=["#3EA6FF", "#FFFFFF", "#FF0000"],
                                   labels=ETIQUETAS, title="Coordenadas paralelas (color = % de likes)")
-    st.plotly_chart(estilo(fig), width="stretch")
+    # Margen superior extra para que el titulo no tape los nombres de los ejes
+    fig = estilo(fig).update_layout(margin=dict(l=70, r=30, t=120, b=30), height=520)
+    st.plotly_chart(fig, width="stretch")
 
 # ---------- 6.6 Mapa (coropleta por pais) ----------
 with tab6:

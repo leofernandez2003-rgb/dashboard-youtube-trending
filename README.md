@@ -4,7 +4,7 @@ Dashboard interactivo del examen final de **Visualización de la Información (U
 
 **App publicada:** https://dashboard-trending-mx-us.streamlit.app
 
-**Versión:** v2.1.0-beta (Hito 1)
+**Versión:** v3.0.0 (Hito 2 — versión final)
 
 ![Captura del dashboard](captura.jpg)
 
@@ -46,8 +46,17 @@ El dataset no tiene latitud ni longitud, por lo que el componente avanzado es la
 | Tiempo | Mediana mensual por país |
 | Relaciones | Dispersión vistas vs % likes con selector de color (control local) |
 | Segmentos | Método del codo, radar (`px.line_polar`), dispersión por segmento, tabla de perfiles y selector de segmento |
-| Jerarquía y perfiles | Sunburst país → categoría → segmento y coordenadas paralelas |
+| Jerarquía y perfiles | Sunburst país → categoría → segmento (`path` y `values = registros`) y coordenadas paralelas |
 | Mapa | Coropleta por país con `px.choropleth_map` |
+
+## Cambios desde la beta 2.1.0 (retroalimentación del Hito 1)
+
+- **Pestañas sin emojis:** nombres limpios (Distribución, Tiempo, Relaciones, Segmentos, Jerarquía y perfiles, Mapa), como pidió el profesor.
+- **Histogramas más claros:** las barras de México (rojo) y Estados Unidos (azul) ahora van lado a lado (`barmode="group"`). Antes se superponían con transparencia y la mezcla se veía como un segundo tono de rojo.
+- **Sunburst con nueva escala de color:** amarillo → naranjo → rojo según la mediana de % likes (antes gris → rojo, poco legible). Se abre en dos niveles (país → categoría) y con un clic se ven los segmentos.
+- **Tooltips personalizados** también en el método del codo y en el sunburst.
+- **Tabla de perfiles** con nombres de columna legibles, % del total y una descripción de cada segmento, más un texto de interpretación.
+- **Coordenadas paralelas:** el título ya no tapa los nombres de los ejes.
 
 ## Estructura del repositorio
 
